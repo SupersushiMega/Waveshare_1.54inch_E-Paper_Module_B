@@ -159,8 +159,8 @@ const uint8_t image[800] PROGMEM = {
 void Init();
 void SPI_Com (uint8_t data);
 void SPI_Data (uint8_t data);
-void drawString (char str[], uint8_t yellow, uint8_t inverted);
-void drawImage (uint8_t *image, uint8_t width, uint8_t height, uint8_t mainCol, uint8_t backCol);
+void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t x, uint8_t y);
+void drawImage (uint8_t *image, uint8_t width, uint8_t height, uint8_t mainCol, uint8_t backCol, uint8_t X, uint8_t Y);
 void refresh();
 
 void SPI_Com (uint8_t data)
@@ -188,7 +188,7 @@ void Wait4Idle(void)
 {
 	while(BUSY)
 	{
-	_delay_ms(100);
+	_delay_ms(10);
 	}
 }
 
@@ -314,11 +314,8 @@ int main(void)
 	
 	Init();
 	
-			//  |_________1________|_________2________|_________3________|________4_________|________5________|_________6________|_________7________|_________8________|_________9________|________10________|
-			//  | 2 4 6 8 | 2 4 6 8| 2 4 6 8 | 2 4 6 8| 2 4 6 8 | 2 4 6 8| 2 4 6 8| 2 4 6 8 | 2 4 6 8| 2 4 6 8| 2 4 6 8 | 2 4 6 8| 2 4 6 8 | 2 4 6 8| 2 4 6 8 | 2 4 6 8| 2 4 6 8 | 2 4 6 8| 2 4 6 8 | 2 4 6 8|
-			//  |1 3 5 7 9|1 3 5 7 |1 3 5 7 9|1 3 5 7 |1 3 5 7 9|1 3 5 7 |1 3 5 7 |1 3 5 7 9|1 3 5 7 |1 3 5 7 |1 3 5 7 9|1 3 5 7 |1 3 5 7 9|1 3 5 7 |1 3 5 7 9|1 3 5 7 |1 3 5 7 9|1 3 5 7 |1 3 5 7 9|1 3 5 7 |
-	drawString("          Far far            away, be-          hind the           word mou-          ntains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in", 0, 1);
-	drawImage(&image, 80, 80, 1, 3);
+	drawString("Test\n Test Test", 0, 1, 10, 5);
+	drawImage(&image, 80, 80, 0, 3, 4, 65);
 	refresh();
 	
 	Wait4Idle();
@@ -326,7 +323,7 @@ int main(void)
 	while(1);
 }//end of main
 
-void drawString (char str[], uint8_t yellow, uint8_t inverted)
+void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t x, uint8_t y)
 {
 	char LetterMap[10][19] = {{0x00}};
 	uint8_t counter = 0;
@@ -337,15 +334,27 @@ void drawString (char str[], uint8_t yellow, uint8_t inverted)
 	{
 		for (Xcount = 0; Xcount < 19; Xcount++)
 		{
-			if(counter < strlen(str))
+			if((counter < strlen(str)) && (Xcount >= x || Ycount > y) && (Ycount >= y))
 			{
-				LetterMap[Ycount][Xcount] = toupper(str[counter]);
+				if(toupper(str[counter]) != '\n')
+				{
+					LetterMap[Ycount][Xcount] = toupper(str[counter]);
+					counter++;
+				}
+				else
+				{
+					while(Xcount < 19)
+					{
+						LetterMap[Ycount][Xcount] = ' ';
+						Xcount++;
+					}
+					counter++;
+				}
 			}
 			else
 			{
 				LetterMap[Ycount][Xcount] = ' ';
 			}
-			counter++;
 		}
 	}
 	if (yellow == 0)
@@ -362,38 +371,20 @@ void drawString (char str[], uint8_t yellow, uint8_t inverted)
 		{
 			for (Xcount = 0; Xcount < 19; Xcount++)
 			{
-				if(LetterMap[Ycount][Xcount] != '\n')
+				if((inverted == 0 && yellow == 0) || (inverted != 0 && yellow != 0))
 				{
-					if((inverted == 0 && yellow == 0) || (inverted != 0 && yellow != 0))
-					{
-						SPI_Data(pgm_read_byte(&Font[LetterMap[Ycount][Xcount]-32][counter]));
-					}
-					else
-					{
-						SPI_Data(~pgm_read_byte(&Font[LetterMap[Ycount][Xcount]-32][counter]));
-					}
+					SPI_Data(pgm_read_byte(&Font[LetterMap[Ycount][Xcount]-32][counter]));
 				}
 				else
 				{
-					while(Xcount < 19)
-					{
-						if((inverted == 0 && yellow == 0) || (inverted != 0 && yellow != 0))
-						{
-							SPI_Data(0xff);
-						}
-						else
-						{
-							SPI_Data(0x00);
-						}
-						Xcount++;
-					}
+					SPI_Data(~pgm_read_byte(&Font[LetterMap[Ycount][Xcount]-32][counter]));
 				}
 			}
 		}
 	}
 }
 
-void drawImage (uint8_t *image, uint8_t width, uint8_t height, uint8_t mainCol, uint8_t backCol)
+void drawImage (uint8_t *image, uint8_t width, uint8_t height, uint8_t mainCol, uint8_t backCol, uint8_t X, uint8_t Y)
 {
 	uint16_t counter = 0;
 	uint16_t x = 0;
@@ -404,7 +395,7 @@ void drawImage (uint8_t *image, uint8_t width, uint8_t height, uint8_t mainCol, 
 		SPI_Com(0x10);
 		for (counter = 0; counter < ((152*152)/8); counter++)
 		{
-			if(((counter*8)%152) < width && (x / (width / 8)) < height)
+			if(((((counter - X) * 8) % 152) < width) && (x < (height * (width / 8))) && ((counter % 19) >= X) && ((counter / 19) >= Y))
 			{
 				if(mainCol == 0 && backCol == 0)
 				{
@@ -449,7 +440,7 @@ void drawImage (uint8_t *image, uint8_t width, uint8_t height, uint8_t mainCol, 
 		SPI_Com(0x13);
 		for (counter = 0; counter < ((152*152)/8); counter++)
 		{
-			if(((counter*8)%152) < width && (x / (width / 8)) < height)
+			if(((((counter - X) * 8) % 152) < width) && (x < (height * (width / 8))) && ((counter % 19) >= X) && ((counter / 19) >= Y))
 			{
 				if(mainCol == 3 && backCol == 3)
 				{
