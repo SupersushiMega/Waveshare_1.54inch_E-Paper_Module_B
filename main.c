@@ -403,21 +403,22 @@ void Init()
 	Wait();
 	//==================================================================
 	
-	//Power settings
-	//==================================================================
-	SPI_Com(0x01);
-	SPI_Data(0x07);
-	SPI_Data(0x00);
-	SPI_Data(0x08);
-	SPI_Data(0x00);
-	//==================================================================
-	
 	//Booster Soft Start
 	//==================================================================
 	SPI_Com(0x06);
-	SPI_Data(0x07);
-	SPI_Data(0x07);
-	SPI_Data(0x07);
+	SPI_Data(0x17);
+	SPI_Data(0x17);
+	SPI_Data(0x17);
+	//==================================================================
+	
+	//Power settings
+	//==================================================================
+	SPI_Com(0x01);
+	SPI_Data(0x03);
+	SPI_Data(0x00);
+	SPI_Data(0x2b);
+	SPI_Data(0x2b);
+	SPI_Data(0x09);
 	//==================================================================
 	
 	SPI_Com(0x04); //Power ON
@@ -436,14 +437,14 @@ void Init()
 	//Vcom and data interval setting
 	//==================================================================
 	SPI_Com(0x50);
-	SPI_Data(0x17);
+	SPI_Data(0x10);
 	//==================================================================
 	
 	//PLL control
 	//==================================================================
 	SPI_Com(0x30);
-	SPI_Data(0x39);
-	//==================================================================
+	SPI_Data(0x3a);
+	//==================================================================	
 	
 	//Resolution settings
 	//==================================================================
@@ -513,7 +514,8 @@ int main(void)
 	FillBW(0xff, 0, 0, DispWidth/4, DispHeight, 0);
 	FillYellow(0x00, 0, 0, DispWidth/4, DispHeight, 0);
 	
-	
+	drawString("Plug into Pc", 0, 0, 0, 0, 0, 0);
+	refresh();
 	drawImage(&image, 80, 80, 0, 1, 0, 0, 1, 0);
 	drawString("                                      ", 0, 1, 0, 0, 0, 0);
 	drawString("Why is this DisplayDirty? push Button", 1, 0, 0, 0, 0, 0);
@@ -522,9 +524,10 @@ int main(void)
 	powerOFF();
 	while(BUTTON);
 	Wait4Idle();
+	FillBW(0b01000101, 0, 0, DispWidth/4, 30, 0);
 	FillYellow(0x00, 0, 0, DispWidth/4, 30, 1);
-	drawString("Scan\nQRcode", 1, 0, 6, 7, 0, 1);
-	drawImage(&qrcode, 88, 88, 0, 1, 4, 32, 0, 1);
+	drawString("Scan\nQRcode", 0, 1, 6, 7, 0, 1);
+	drawImage(&qrcode, 88, 88, 0, 2, 4, 32, 0, 1);
 	powerOFF();
 	//~ while(1)
 	//~ {
@@ -601,6 +604,7 @@ void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t NewLineX,
 	uint8_t counter = 0;	//counter variable
 	uint8_t Xcount = 0;		//counter variable for x axis
 	uint8_t Ycount = 0;		//counter variable for y axis
+	uint8_t Xmax = 0;
 	
 	if (inverted >= 1)
 	{
@@ -620,6 +624,11 @@ void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t NewLineX,
 					Xcount = NewLineX;
 					Ycount++;
 					counter++;
+				}
+				
+				if(Xmax < Xcount)
+				{
+					Xmax = Xcount;
 				}
 
 				SPI_Com(0x92);
@@ -659,7 +668,7 @@ void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t NewLineX,
 	{
 		if (Ycount != y)
 		{
-			refreshPartial(NewLineX, y, (DispWidth / 4) - NewLineX, (y + ((Ycount+1) * 15)));
+			refreshPartial(NewLineX, y, (Xmax * 2) - NewLineX, (y + ((Ycount+1) * 15)));
 		}
 		else
 		{
