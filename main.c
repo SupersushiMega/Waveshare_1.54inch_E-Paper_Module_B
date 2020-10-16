@@ -25,6 +25,10 @@
 #define BUSY !(PIND & (1<<PD3))
 #define PROGMEM   __ATTR_PROGMEM__
 
+
+const uint8_t DispHeight = 152;
+const uint8_t DispWidth = 152;
+
 volatile uint16_t ISR_zaehler;
 
 ISR (TIMER0_OVF_vect)
@@ -33,53 +37,64 @@ ISR (TIMER0_OVF_vect)
 	ISR_zaehler++;	//Increase ISR_zaehler by 1
 }
 
-//~ const unsigned char lut_vcom0[] =
-//~ {
-    //~ 0x0E, 0x14, 0x01, 0x0A, 0x06, 0x04, 0x0A, 0x0A,
-    //~ 0x0F, 0x03, 0x03, 0x0C, 0x06, 0x0A, 0x00
-//~ };
+const unsigned char lut_vcom0[] =
+{
+    0x0E, 0x14, 0x01, 0x0A, 0x06, 0x04, 0x0A, 0x0A,
+    0x0F, 0x03, 0x03, 0x0C, 0x06, 0x0A, 0x00
+};
  
-//~ const unsigned char lut_w[] =
-//~ {
-    //~ 0x0E, 0x14, 0x01, 0x0A, 0x46, 0x04, 0x8A, 0x4A,
-    //~ 0x0F, 0x83, 0x43, 0x0C, 0x86, 0x0A, 0x04
-//~ };
+const unsigned char lut_w[] =
+{
+    0x0E, 0x14, 0x01, 0x0A, 0x46, 0x04, 0x8A, 0x4A,
+    0x0F, 0x83, 0x43, 0x0C, 0x86, 0x0A, 0x04
+};
  
-//~ const unsigned char lut_b[] = 
-//~ {
-    //~ 0x0E, 0x14, 0x01, 0x8A, 0x06, 0x04, 0x8A, 0x4A,
-    //~ 0x0F, 0x83, 0x43, 0x0C, 0x06, 0x4A, 0x04
-//~ };
+const unsigned char lut_b[] = 
+{
+    0x0E, 0x14, 0x01, 0x8A, 0x06, 0x04, 0x8A, 0x4A,
+    0x0F, 0x83, 0x43, 0x0C, 0x06, 0x4A, 0x04
+};
  
-//~ const unsigned char lut_g1[] = 
-//~ {
-    //~ 0x8E, 0x94, 0x01, 0x8A, 0x06, 0x04, 0x8A, 0x4A,
-    //~ 0x0F, 0x83, 0x43, 0x0C, 0x06, 0x0A, 0x04
-//~ };
+const unsigned char lut_g1[] = 
+{
+    0x8E, 0x94, 0x01, 0x8A, 0x06, 0x04, 0x8A, 0x4A,
+    0x0F, 0x83, 0x43, 0x0C, 0x06, 0x0A, 0x04
+};
  
-//~ const unsigned char lut_g2[] = 
-//~ {
-    //~ 0x8E, 0x94, 0x01, 0x8A, 0x06, 0x04, 0x8A, 0x4A,
-    //~ 0x0F, 0x83, 0x43, 0x0C, 0x06, 0x0A, 0x04
-//~ };
+const unsigned char lut_g2[] = 
+{
+    0x8E, 0x94, 0x01, 0x8A, 0x06, 0x04, 0x8A, 0x4A,
+    0x0F, 0x83, 0x43, 0x0C, 0x06, 0x0A, 0x04
+};
  
-//~ const unsigned char lut_vcom1[] = 
-//~ {
-    //~ 0x03, 0x1D, 0x01, 0x01, 0x08, 0x23, 0x37, 0x37,
-    //~ 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-//~ };
+const unsigned char lut_vcom1[] = 
+{
+    0x03, 0x1D, 0x01, 0x01, 0x08, 0x23, 0x37, 0x37,
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
  
-//~ const unsigned char lut_yellow0[] = 
-//~ {
-    //~ 0x83, 0x5D, 0x01, 0x81, 0x48, 0x23, 0x77, 0x77,
-    //~ 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-//~ };
+const unsigned char lut_yellow0[] = 
+{
+    0x83, 0x5D, 0x01, 0x81, 0x48, 0x23, 0x77, 0x77,
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
  
-//~ const unsigned char lut_yellow1[] = 
-//~ {
-    //~ 0x03, 0x1D, 0x01, 0x01, 0x08, 0x23, 0x37, 0x37,
-    //~ 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-//~ };  
+const unsigned char lut_yellow1[] = 
+{
+    0x03, 0x1D, 0x01, 0x01, 0x08, 0x23, 0x37, 0x37,
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};  
+
+const uint8_t smallSquares[8] PROGMEM = {
+	0xF0,
+	0xF0,
+	0xF0,
+	0xF0,
+	0x0F,
+	0x0F,
+	0x0F,
+	0x0F,
+	};
 
 
 const uint8_t qrcode[968] PROGMEM = {
@@ -263,11 +278,12 @@ void SPI_Data (uint16_t data);	//Send Data to display
 void SPI_DataArray (uint8_t data[], uint16_t ArraySize, uint8_t inverted);
 void Wait(void);	//Small Delay
 void Wait4Idle(void);	//Wait for display to be idle
-void clearBW (uint8_t Pat);		//Set Black and White to specified Pattern
-void clearYellow (uint8_t Pat);		//Set Yellow to specified Pattern
-void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t NewLineX, uint8_t x, uint8_t y);	//Draw a String
-void drawImage (uint8_t *image, uint8_t width, uint8_t height, uint8_t mainCol, uint8_t backCol, uint8_t x, uint8_t y, uint8_t repeat);	//Draw a Image	(Col values: 0 Black, 1 Transparent when other not 0 else white, 2 yellow)
+void FillBW (uint8_t Pat, uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t Refresh);		//Set Black and White to specified Pattern
+void FillYellow (uint8_t Pat, uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t Refresh);		//Set Yellow to specified Pattern
+void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t NewLineX, uint8_t x, uint8_t y, uint8_t Refresh);	//Draw a String
+void drawImage (uint8_t *image, uint8_t width, uint8_t height, uint8_t mainCol, uint8_t backCol, uint8_t x, uint8_t y, uint8_t repeat, uint8_t Refresh);	//Draw a Image	(Col values: 0 Black, 1 Transparent when other not 0 else white, 2 yellow)
 void refresh();		//Refresh Display and put display to sleep
+void refreshPartial(uint8_t x, uint8_t y,  uint8_t width, uint8_t height);
 void powerOFF();
 void defineWindow(uint8_t x, uint8_t y,  uint8_t width, uint8_t height);
 //======================================================================
@@ -326,56 +342,56 @@ void SPI_DataArray (uint8_t data[], uint16_t ArraySize, uint8_t inverted)
 void Wait(void)
 {
 	ISR_zaehler = 0;
-	while(ISR_zaehler != 300);
+	while(ISR_zaehler != 200);
 }
 
 void Wait4Idle(void)
 {
 	while(BUSY)
 	{
-		Wait();
+		//Wait();
 	}
 }
 
-//~ void SetLutBw(void) {
-    //~ unsigned int count;     
-    //~ SPI_Com(0x20);         //g vcom
-    //~ for(count = 0; count < 15; count++) {
-        //~ SPI_Data(lut_vcom0[count]);
-    //~ } 
-    //~ SPI_Com(0x21);        //g ww --
-    //~ for(count = 0; count < 15; count++) {
-        //~ SPI_Data(lut_w[count]);
-    //~ } 
-    //~ SPI_Com(0x22);         //g bw r
-    //~ for(count = 0; count < 15; count++) {
-        //~ SPI_Data(lut_b[count]);
-    //~ } 
-    //~ SPI_Com(0x23);         //g wb w
-    //~ for(count = 0; count < 15; count++) {
-        //~ SPI_Data(lut_g1[count]);
-    //~ } 
-    //~ SPI_Com(0x24);         //g bb b
-    //~ for(count = 0; count < 15; count++) {
-        //~ SPI_Data(lut_g2[count]);
-    //~ } 
-//~ }
+void SetLutBw(void) {
+    unsigned int count;     
+    SPI_Com(0x20);         //g vcom
+    for(count = 0; count < 15; count++) {
+        SPI_Data(lut_vcom0[count]);
+    } 
+    SPI_Com(0x21);        //g ww --
+    for(count = 0; count < 15; count++) {
+        SPI_Data(lut_w[count]);
+    } 
+    SPI_Com(0x22);         //g bw r
+    for(count = 0; count < 15; count++) {
+        SPI_Data(lut_b[count]);
+    } 
+    SPI_Com(0x23);         //g wb w
+    for(count = 0; count < 15; count++) {
+        SPI_Data(lut_g1[count]);
+    } 
+    SPI_Com(0x24);         //g bb b
+    for(count = 0; count < 15; count++) {
+        SPI_Data(lut_g2[count]);
+    } 
+}
 
-//~ void SetLutY(void) {
-    //~ unsigned int count;     
-    //~ SPI_Com(0x25);
-    //~ for(count = 0; count < 15; count++) {
-        //~ SPI_Data(lut_vcom1[count]);
-    //~ } 
-    //~ SPI_Com(0x26);
-    //~ for(count = 0; count < 15; count++) {
-        //~ SPI_Data(lut_yellow0[count]);
-    //~ } 
-    //~ SPI_Com(0x27);
-    //~ for(count = 0; count < 15; count++) {
-        //~ SPI_Data(lut_yellow1[count]);
-    //~ } 
-//~ }
+void SetLutY(void) {
+    unsigned int count;     
+    SPI_Com(0x25);
+    for(count = 0; count < 15; count++) {
+        SPI_Data(lut_vcom1[count]);
+    } 
+    SPI_Com(0x26);
+    for(count = 0; count < 15; count++) {
+        SPI_Data(lut_yellow0[count]);
+    } 
+    SPI_Com(0x27);
+    for(count = 0; count < 15; count++) {
+        SPI_Data(lut_yellow1[count]);
+    } 
+}
 
 void Init()
 {	
@@ -432,9 +448,9 @@ void Init()
 	//Resolution settings
 	//==================================================================
 	SPI_Com(0x61);
-	SPI_Data(0x98);
+	SPI_Data(DispWidth);
 	SPI_Data(0x00);
-	SPI_Data(0x98);
+	SPI_Data(DispHeight);
 	//==================================================================
 	
 	//VCM_DC setting
@@ -445,8 +461,8 @@ void Init()
 	
 	initialised = 1;
 	
-	//~ SetLutBw();
-	//~ SetLutY();
+	SetLutBw();
+	SetLutY();
 }
 
 int main(void)
@@ -490,55 +506,47 @@ int main(void)
 	
 	Init();
 	
-	//~ clearBW(0x00);
-	//~ clearYellow(0xFF);
+	//~ FillBW(0x00);
+	//~ FillYellow(0xFF);
 	
 	Wait4Idle();
-	clearBW(0xff);
-	clearYellow(0x00);
-	//drawString("te\nst", 1, 0, 0, 4, 4);
+	FillBW(0xff, 0, 0, DispWidth/4, DispHeight, 0);
+	FillYellow(0x00, 0, 0, DispWidth/4, DispHeight, 0);
 	
-	//~ defineWindow(0,0,1,15);
-	//~ uint8_t test[10];
-	//~ SPI_Com(0x10);
-	//~ SPI_DataArray(test);
 	
-	drawImage(&image, 80, 80, 0, 0, 0, 0, 0);
-	
+	drawImage(&image, 80, 80, 0, 1, 0, 0, 1, 0);
+	drawString("                                      ", 0, 1, 0, 0, 0, 0);
+	drawString("Why is this DisplayDirty? push Button", 1, 0, 0, 0, 0, 0);
 	SPI_Com(0x92);
 	refresh();
 	powerOFF();
-	//~ drawImage(&image, 80, 80, 0, 1, 0, 0, 1);
-	//~ drawString("\n\n", 0, 1, 1, 0, 0);
-	//~ drawString("Why is this DisplayDirty? push Button", 1, 1, 1, 0, 0);
-	//~ refresh();
-	//~ while(BUTTON);
-	//~ drawString("\n\n\n\n\n\nThe Best building\nMaterial is on it", 0, 1, 1, 0, 0);
-	//~ drawImage(&qrcode, 88, 88, 1, 2, 0, 0, 0);
-	//~ refresh();
-	//~ clearBW(0x00);
-	//~ clearYellow(0x00);
+	while(BUTTON);
+	Wait4Idle();
+	FillYellow(0x00, 0, 0, DispWidth/4, 30, 1);
+	drawString("Scan\nQRcode", 1, 0, 6, 7, 0, 1);
+	drawImage(&qrcode, 88, 88, 0, 1, 4, 32, 0, 1);
+	powerOFF();
 	//~ while(1)
 	//~ {
 		//~ Wait4Idle();
 		//~ SPI_Com(0x12);
 	//~ }
 	
-	//~ clearYellow(0xFF);
+	//~ FillYellow(0xFF);
 	//~ refresh();
-	//~ clearYellow(0x00);
+	//~ FillYellow(0x00);
 	//~ refresh();
 	
-	//~ clearYellow(0xFF);
-	//~ clearBW(0x00);
+	//~ FillYellow(0xFF);
+	//~ FillBW(0x00);
 	//~ refresh();
-	//~ clearYellow(0x00);
-	//~ clearBW(0xFF);
+	//~ FillYellow(0x00);
+	//~ FillBW(0xFF);
 	//~ refresh();
 	while(1);
 }//end of main
 
-void clearBW (uint8_t Pat)
+void FillBW (uint8_t Pat, uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t Refresh)
 {
 	if (initialised == 0)	//Check if Display has been initialised since last Deep Sleep
 	{
@@ -546,15 +554,21 @@ void clearBW (uint8_t Pat)
 	}
 	uint16_t counter;	//Counter variable
 	Wait4Idle();
+	defineWindow(x, y, width, height);
 	SPI_Com(0x10);	//set to BW data transmission mode
-	for (counter = 0; counter < ((152*152)/8); counter++)
+	for (counter = 0; counter < (((width * 8) * height)/8); counter++)
 	{
 		Wait4Idle();
 		SPI_Data(Pat);	//Send data
 	}
+	if (Refresh != 0)
+	{
+		refresh();
+	}
+	SPI_Com(0x92);
 }
 
-void clearYellow (uint8_t Pat)
+void FillYellow (uint8_t Pat, uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t Refresh)
 {
 	if (initialised == 0)	//Check if Display has been initialised since last Deep Sleep
 	{
@@ -562,16 +576,22 @@ void clearYellow (uint8_t Pat)
 	}
 	uint16_t counter;	//Counter variable
 	Wait4Idle();
-	SPI_Com(0x13);	//set to Yellow data transmission mode
-	for (counter = 0; counter < ((152*152)/8); counter++)
+	defineWindow(x, y, width, height);
+	SPI_Com(0x13);	//set to BW data transmission mode
+	for (counter = 0; counter < (((width * 8) * height)/8); counter++)
 	{
 		Wait4Idle();
 		SPI_Data(Pat);	//Send data
 	}
+	if (Refresh != 0)
+	{
+		refresh();
+	}
+	SPI_Com(0x92);
 }
 
 
-void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t NewLineX, uint8_t x, uint8_t y)
+void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t NewLineX, uint8_t x, uint8_t y, uint8_t Refresh)
 {
 	if (initialised == 0)	//Check if Display has been initialised since last Deep Sleep
 	{
@@ -582,17 +602,22 @@ void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t NewLineX,
 	uint8_t Xcount = 0;		//counter variable for x axis
 	uint8_t Ycount = 0;		//counter variable for y axis
 	
+	if (inverted >= 1)
+	{
+		inverted = 0xff;
+	}
+	
 	//Sending letter data
 	//==================================================================
 	for (Ycount = y; Ycount < 10; Ycount++)
 	{
 		for (Xcount = x; Xcount < 19; Xcount++)
-		{
+		{	
 			if(counter < strlen(str))
 			{
 				if(str[counter] == '\n')
 				{
-					Xcount = 0;
+					Xcount = NewLineX;
 					Ycount++;
 					counter++;
 				}
@@ -609,59 +634,120 @@ void drawString (char str[], uint8_t yellow, uint8_t inverted, uint8_t NewLineX,
 				}
 				Wait4Idle();
 				memcpy_P(LetterBuff, &Font[str[counter]-32], 15);
-				if(inverted == yellow)	//Check if inverted space and yellow are equal
+				if(yellow == 0)	//check if data has to be sent inverted or not
 				{
-					if(inverted == 0)	//check if data has to be sent inverted or not
-					{
-						SPI_DataArray(LetterBuff, 15, 0);	//get data from Font Array and send it inverted
-					}
-					else
-					{
-						SPI_DataArray(LetterBuff, 15, 1);	//get data from Font Array and send it inverted
-					}
+					SPI_DataArray(LetterBuff, 15, inverted);	//get data from Font Array and send it inverted
 				}
 				else
 				{
-					if(inverted == 0)	//check if data has to be sent inverted or not
-					{
-						SPI_DataArray(LetterBuff, 15, 1);	//get data from Font Array and send it inverted
-					}
-					else
-					{
-						SPI_DataArray(LetterBuff, 15, 0);	//get data from Font Array and send it inverted
-					}
+					SPI_DataArray(LetterBuff, 15, ~inverted);	//get data from Font Array and send it inverted
 				}
 				counter++;
 			}
+			else
+			{
+				break;
+			}
+		}
+		if(counter >= strlen(str))
+		{
+			break;
 		}
 	}
 	//==================================================================
+	if (Refresh != 0)
+	{
+		if (Ycount != y)
+		{
+			refreshPartial(NewLineX, y, (DispWidth / 4) - NewLineX, (y + ((Ycount+1) * 15)));
+		}
+		else
+		{
+			refreshPartial(x, y, Xcount - x, (y + ((Ycount+1) * 15)));
+		}
+		SPI_Com(0x92);
+	}
+	else
+	{
+		SPI_Com(0x92);
+	}
 }
 
-void drawImage (uint8_t *image, uint8_t width, uint8_t height, uint8_t mainCol, uint8_t backCol, uint8_t x, uint8_t y, uint8_t repeat)
+void drawImage (uint8_t *image, uint8_t width, uint8_t height, uint8_t mainCol, uint8_t backCol, uint8_t x, uint8_t y, uint8_t repeat, uint8_t Refresh)
 {
 	if (initialised == 0)	//Check if Display has been initialised since last Deep Sleep
 	{
 		Init();
 	}
+	uint8_t mode = 0x10;
 	uint8_t XRepeatcount = 0;
 	uint8_t YRepeatcount = 0;
+	
+	uint8_t roundY = (((DispHeight - y)*100) / (height*100)) + ((((DispHeight - y)*100) / (height*100)) % 100);
+	uint8_t roundX = (((DispWidth - (x * 8))*100) / (width*100)) + ((((DispWidth - (x * 8))*100) / (width*100)) % 100);
+	
 	uint16_t counter = 0;
-	
-	defineWindow(x, y, (width/4) - 1, height-1);
-	
-	SPI_Com(0x10);
-	
-	for (counter = 0; counter < ((width / 8) * height); counter++)
+	for (mode = 0x10; mode <= 0x13; mode += 0x03)
 	{
-		SPI_Data(pgm_read_byte(&image[counter]));
+		for (YRepeatcount = 0; YRepeatcount < roundY; YRepeatcount++)
+		{
+			for (XRepeatcount = 0; XRepeatcount < roundX; XRepeatcount++)
+			{
+				SPI_Com(0x92);
+				defineWindow(x + (XRepeatcount * (width/8)), y + (YRepeatcount * height), (width/4) - 1, height-1);
+				SPI_Com(mode);
+				Wait4Idle();
+				for (counter = 0; counter < ((width / 8) * height); counter++)
+				{
+					if(mainCol == backCol)
+					{
+						SPI_Data(0x00);
+					}
+					else if (mainCol == 0 && mode == 0x10 || backCol == 2 && mode == 0x13)
+					{
+						SPI_Data(pgm_read_byte(&image[counter]));
+					}
+					else if (backCol == 0 && mode == 0x10 || mainCol == 2 && mode == 0x13)
+					{
+						SPI_Data(~pgm_read_byte(&image[counter]));
+					}
+				}
+				if(repeat == 0)
+				{
+					YRepeatcount = roundY;
+					XRepeatcount = roundX;
+				}
+			}
+		}
 	}
-	refresh();
+	if (Refresh != 0)
+	{
+		if(repeat != 0)
+		{
+			refreshPartial(x, y, (DispWidth / 4) - x, DispHeight - y);
+		}
+		else
+		{
+			refresh();
+		}
+		SPI_Com(0x92);
+	}
+	else
+	{
+		SPI_Com(0x92);
+	}
 }
 
 void refresh()
 {
 	Wait4Idle();
+	SPI_Com(0x12);
+}
+
+void refreshPartial(uint8_t x, uint8_t y,  uint8_t width, uint8_t height)
+{
+	Wait4Idle();
+	defineWindow(x, y, width, height);
 	SPI_Com(0x12);
 }
 
